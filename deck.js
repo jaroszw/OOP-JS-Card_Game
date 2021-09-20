@@ -20,43 +20,51 @@ export default class Deck {
     this.cards = cards;
   }
 
-  get cardsLength() {
+  get numberOfCards() {
     return this.cards.length;
   }
 
   shuffle() {
-    for (let i = this.cardsLength - 1; i > 0; i--) {
+    for (let i = this.numberOfCards - 1; i > 0; i--) {
       const newIndex = Math.floor(Math.random() * i + 1);
       const oldValue = this.cards[newIndex];
       this.cards[newIndex] = this.cards[i];
       this.cards[i] = oldValue;
     }
   }
+
+  pop() {
+    return this.cards.shift();
+  }
+
+  push(card) {
+    this.cards.push(card);
+  }
 }
 
-class Card {
-  constructor(suite, value) {
-    this.suite = suite;
+export class Card {
+  constructor(suit, value) {
+    this.suit = suit;
     this.value = value;
   }
 
   get color() {
-    return this.suite === '♠' || this.suite === '♣' ? 'black' : 'red';
+    return this.suit === '♠' || this.suit === '♣' ? 'black' : 'red';
   }
 
   getCardHTML() {
     const cardDiv = document.createElement('div');
-    cardDiv.innerText = this.suite;
+    cardDiv.innerText = this.suit;
     cardDiv.classList.add('card', this.color);
-    cardDiv.dataset.value = `${this.suite} ${this.value}`;
+    cardDiv.dataset.value = `${this.value} ${this.suit}`;
     return cardDiv;
   }
 }
 
 function getNewCards() {
-  return suits.flatMap((suite) => {
+  return suits.flatMap((suit) => {
     return values.map((val) => {
-      const card = new Card(suite, val);
+      const card = new Card(suit, val);
       return card;
     });
   });

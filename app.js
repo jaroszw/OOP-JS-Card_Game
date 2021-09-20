@@ -1,14 +1,122 @@
-import Deck from './deck.js';
+import Deck, { Card } from './deck.js';
+
+const CARD_VALUE_MAP = {
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+  7: 7,
+  8: 8,
+  9: 9,
+  10: 10,
+  J: 11,
+  Q: 12,
+  K: 13,
+  A: 14,
+};
 
 const computerCardSlot = document.querySelector('.computer-card-slot');
 const playerCardSlot = document.querySelector('.player-card-slot');
 
-const computerDeck = document.querySelector('.computer-deck');
-const playerDeck = document.querySelector('.player-deck');
+const computerDeckElement = document.querySelector('.computer-deck');
+const playerDeckElement = document.querySelector('.player-deck');
+const text = document.querySelector('.text');
 
-const deck = new Deck();
-deck.shuffle();
-console.log(deck.cards);
+let playerDeck, computerDeck, inRound, stop;
 
-computerCardSlot.append(deck.cards[1].getCardHTML());
-playerCardSlot.append(deck.cards[7].getCardHTML());
+document.addEventListener('click', () => {
+  if (stop) {
+    startGame();
+    return;
+  }
+
+  if (inRound) {
+    cleanBeforeRound();
+  } else {
+    flipCards();
+  }
+});
+
+startGame();
+
+function startGame() {
+  const deck = new Deck();
+  deck.shuffle();
+
+  const deckMidpoint = Math.ceil(deck.numberOfCards / 2);
+  playerDeck = new Deck(deck.cards.slice(0, deckMidpoint));
+  computerDeck = new Deck([new Card('s', 2)]);
+
+  inRound = false;
+
+  cleanBeforeRound();
+}
+
+function cleanBeforeRound() {
+  inRound = false;
+  computerCardSlot.innerHTML = '';
+  playerCardSlot.innerHTML = '';
+  text.innerText = '';
+
+  updateDeckCount();
+}
+
+function flipCards() {
+  inRound = true;
+
+  const playerCard = playerDeck.pop();
+  const computerCard = computerDeck.pop();
+
+  playerCardSlot.appendChild(playerCard.getCardHTML());
+  computerCardSlot.appendChild(computerCard.getCardHTML());
+
+  updateDeckCount();
+
+  if (isRoundWinner(playerCard, computerCard)) {
+    text.innerText = 'Win';
+    playerDeck.push(playerCard);
+    playerDeck.push(computerCard);
+  } else if (isRoundWinner(computerCard, playerCard)) {
+    text.innerText = 'Lose';
+    computerDeck.push(playerCard);
+    computerDeck.push(computerCard);
+  } else {
+    text.innerText = 'Draw';
+    playerDeck.push(playerCard);
+    computerDeck.push(computerCard);
+  }
+
+  if (isGameOver(playerDeck)) {
+    text.innerText = 'You lose!';
+    stop = true;
+  } else if (isGameOver(computerDeck)) {
+    // add restar game screen
+
+    console.log('Restarting game');
+    stop = true;
+    text.innerText = 'You Win!';
+
+    const restarGame = document.createElement('div');
+    const restartButton = document.createElement('button');
+    restartButton.innerText = 'restart';
+    restarGame.className = 'restart';
+    restarGame.innerText = 'do you want to restart the game';
+    document.body.appendChild(restarGame);
+    restarGame.appendChild(restartButton);
+  }
+}
+
+function updateDeckCount() {
+  computerDeckElement.innerText = computerDeck.numberOfCards;
+  playerDeckElement.innerText = playerDeck.numberOfCards;
+  text.innerText = 'game';
+}
+
+function isRoundWinner(cardOne, cardTwo) {
+  return CARD_VALUE_MAP[cardOne.value] > CARD_VALUE_MAP[cardTwo.value];
+}
+
+function isGameOver(deck) {
+  return deck.numberOfCards === 0;
+}
